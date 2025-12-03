@@ -1,0 +1,77 @@
+# ------------------------------------------------
+# 通用 (General)
+# ------------------------------------------------
+# 依赖包 (绝对不能提交)
+node_modules/
+.pnpm-store/
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# 编辑器/IDE 配置 (通常不提交个人配置)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ------------------------------------------------
+# 环境配置 (Environment Variables) - 安全关键！
+# ------------------------------------------------
+# 这些文件通常包含敏感信息或本地配置，严禁提交
+.env
+.env.local
+.env.*.local
+*.env
+
+# ------------------------------------------------
+# 前端 (Client - Vite/React)
+# ------------------------------------------------
+# 构建产物
+dist/
+dist-ssr/
+build/
+coverage/
+
+# TypeScript 缓存
+*.tsbuildinfo
+
+# ------------------------------------------------
+# 后端 (Server - Node/Express)
+# ------------------------------------------------
+# 进阶任务2：用户上传的视频和图片不应提交到代码库
+server/uploads/
+server/public/uploads/
+uploads/
+
+# 进阶任务1：本地数据库文件 (LowDB / SQLite)
+# 你的测试数据不应该污染代码库
+*.db
+*.sqlite
+*.sqlite3
+db.json
+data/
+
+# 临时文件
+tmp/
+temp/
+
+# ------------------------------------------------
+# 测试相关 (Testing)
+# ------------------------------------------------
+coverage/
+cypress/videos/
+cypress/screenshots/
