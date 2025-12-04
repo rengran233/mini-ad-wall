@@ -22,6 +22,7 @@ export const useAdStore = create<AdState>()(
       addAd: (adData) => set((state) => {
         const newAd: Ad = {
           ...adData,
+          // 原生浏览器API
           id: crypto.randomUUID(), // 生成唯一ID
           clicked: 0,
           createdAt: Date.now(),
@@ -46,7 +47,7 @@ export const useAdStore = create<AdState>()(
         const updatedAds = state.ads.map((ad) => 
           ad.id === id ? { ...ad, clicked: ad.clicked + 1 } : ad
         );
-        // 点击数变化会影响分数，必须重新排序 [cite: 47, 77]
+        // 点击数变化会影响分数，必须重新排序 
         return { ads: sortAds(updatedAds) };
       }),
     }),

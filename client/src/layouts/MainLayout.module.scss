@@ -1,0 +1,27 @@
+.layout {
+    min-height: 100vh;
+  }
+  
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #001529; // Antd 深色主题色
+    padding: 0 24px;
+  }
+  
+  .logo {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .content {
+    padding: 24px 50px;
+  }
+  
+  .innerContent {
+    padding: 24px;
+    min-height: 280px;
+    border-radius: 8px;
+  }
