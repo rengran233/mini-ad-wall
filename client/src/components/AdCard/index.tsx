@@ -23,7 +23,7 @@ interface AdCardProps {
 }
 
 const AdCard = ({ ad, onEdit, onDelete, onCopy, onClick }: AdCardProps) => {
-  // 计算当前分数用于展示 (可选，方便调试)
+  // 计算当前分数用于展示 (方便调试)
   const score = calculateScore(ad.pricing, ad.clicked);
 
   const handleCardClick = () => {

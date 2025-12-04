@@ -8,22 +8,22 @@ export interface Ad {
     /** 唯一标识 (UUID) */
     id: string;
     
-    /** 广告标题 [cite: 74] */
+    /** 广告标题 */
     title: string;
     
-    /** 发布者信息 (如: 字节广告君) [cite: 74] */
+    /** 发布者信息 (如: 字节广告君) */
     publisher: string;
     
-    /** 广告推广文案 [cite: 74] */
+    /** 广告推广文案 */
     content: string;
     
-    /** 落地页 URL [cite: 74] */
+    /** 落地页 URL */
     url: string;
     
-    /** 出价 (用户愿意支付的费用) [cite: 74] */
+    /** 出价 (用户愿意支付的费用) */
     pricing: number;
     
-    /** 热度 (被点击的次数) [cite: 74] */
+    /** 热度 (被点击的次数) */
     clicked: number;
     
     /** 创建时间 (用于默认排序或展示) */
