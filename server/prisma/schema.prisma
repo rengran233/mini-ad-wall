@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 定义广告模型 (对应之前的 Ad 接口)
+model Ad {
+  id        String   @id @default(uuid()) // 自动生成 UUID
+  title     String
+  publisher String
+  content   String
+  url       String
+  pricing   Float    // 小数
+  clicked   Int      @default(0) // 默认 0
+  createdAt DateTime @default(now()) // 自动记录创建时间
+}
