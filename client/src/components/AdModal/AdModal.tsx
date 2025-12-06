@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Modal, Form, Input, InputNumber } from 'antd';
 import type { AdFormData } from '@/types';
+import styles from './AdModal.module.scss';
 
 interface AdModalProps {
   open: boolean;
@@ -90,7 +91,7 @@ const AdModal = ({ open, onCancel, onSubmit, initialValues, title }: AdModalProp
           rules={[{ required: true, message: '请输入出价' }]}
         >
           <InputNumber 
-            style={{ width: '100%' }} 
+            className={styles.fullWidth} 
             min={0} 
             step={0.1} 
             placeholder="0.00" 

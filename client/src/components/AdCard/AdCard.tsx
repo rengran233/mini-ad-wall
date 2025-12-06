@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import type { Ad } from '@/types';
 import { calculateScore } from '@/utils/ranking';
-import styles from './index.module.scss';
+import styles from './AdCard.module.scss';
 
 const { Meta } = Card;
 const { Paragraph } = Typography;

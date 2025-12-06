@@ -5,6 +5,7 @@ import MainLayout from '@/layouts/MainLayout';
 import AdCard from '@/components/AdCard';
 import AdModal from '@/components/AdModal';
 import type { Ad, AdFormData } from '@/types';
+import styles from './AdList.module.scss';
 
 const AdList = () => {
   const { ads, addAd, updateAd, deleteAd, incrementClick } = useAdStore();
@@ -74,9 +75,9 @@ const AdList = () => {
   return (
     <MainLayout onAddClick={handleAddClick}>
       {ads.length === 0 ? (
-        <Empty description="暂无广告，快去创建第一条吧！" style={{ marginTop: 100 }} />
+        <Empty description="暂无广告，快去创建第一条吧！" className={styles.emptyState} />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+        <div className={styles.grid}>
           {ads.map((ad) => (
             <AdCard
               key={ad.id}
