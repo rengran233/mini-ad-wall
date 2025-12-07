@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:3000/ads
+@contentType = application/json
+
+### 1. 获取广告列表 (GET)
+GET {{baseUrl}}
+Content-Type: {{contentType}}
+
+### 2. 创建一条新广告 (POST)
+# @name createAd
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "title": "VS Code 测试广告",
+  "publisher": "开发者",
+  "content": "这是一条通过 REST Client 插件创建的广告",
+  "url": "https://code.visualstudio.com",
+  "pricing": 8.8
+}
+
+### 3. 点击广告 (+1 热度) (POST)
+# 注意：请将下面的 ID 替换为上面创建成功后返回的 id
+@id = {{createAd.response.body.data.id}}
+
+POST {{baseUrl}}/{{id}}/click
+Content-Type: {{contentType}}
+
+### 4. 编辑广告 (PUT)
+PUT {{baseUrl}}/{{id}}
+Content-Type: {{contentType}}
+
+{
+  "title": "VS Code 测试广告 (已修改)",
+  "pricing": 10.5
+}
+
+### 5. 删除广告 (DELETE)
+DELETE {{baseUrl}}/{{id}}

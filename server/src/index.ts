@@ -1,26 +1,25 @@
 import Koa from 'koa';
-import Router from '@koa/router';
 import bodyParser from '@koa/bodyparser';
 import cors from '@koa/cors';
+import adRoutes from './routes/adRoutes.js'; // 引入路由
 
 const app = new Koa();
-const router = new Router();
 
-// 中间件配置
-app.use(cors()); // 允许跨域
-app.use(bodyParser()); // 解析 JSON Body
+// 1. 中间件
+app.use(cors());
+app.use(bodyParser());
 
-// 测试路由
-router.get('/', async (ctx) => {
-  ctx.body = {
-    message: 'Mini Ad Wall Backend is running!',
-    status: 'ok',
-    timestamp: Date.now()
-  };
+// 2. 注册路由
+app.use(adRoutes.routes()).use(adRoutes.allowedMethods());
+
+// 3. 兜底路由 (可选，方便确认服务活着)
+app.use(async (ctx, next) => {
+  if (ctx.path === '/' && ctx.method === 'GET') {
+    ctx.body = { message: 'Mini Ad Wall API is running' };
+  } else {
+    await next();
+  }
 });
-
-// 注册路由
-app.use(router.routes()).use(router.allowedMethods());
 
 const PORT = 3000;
 app.listen(PORT, () => {
