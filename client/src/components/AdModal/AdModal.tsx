@@ -1,40 +1,22 @@
-import { useEffect } from 'react';
 import { Modal, Form, Input, InputNumber } from 'antd';
 import type { AdFormData } from '@/types';
+import { useAdModal } from './useAdModal';
 import styles from './AdModal.module.scss';
 
 interface AdModalProps {
   open: boolean;
   onCancel: () => void;
   onSubmit: (values: AdFormData) => void;
-  initialValues?: AdFormData | null; // 如果有值，说明是编辑或复制模式
+  initialValues?: AdFormData | null;
   title: string;
+  confirmLoading?: boolean; // 新增属性
 }
 
-const AdModal = ({ open, onCancel, onSubmit, initialValues, title }: AdModalProps) => {
-  const [form] = Form.useForm();
-
-  // 当弹窗打开或 initialValues 变化时，重置表单
-  useEffect(() => {
-    if (open) {
-      if (initialValues) {
-        form.setFieldsValue(initialValues);
-      } else {
-        form.resetFields();
-      }
-    }
-  }, [open, initialValues, form]);
-
-  // promise改为更现代的async/await语法
-  const handleOk = async () => {
-    try {
-      const values = await form.validateFields();
-      onSubmit(values);
-      form.resetFields();
-    } catch (info) {
-      console.log('Validate Failed:', info);
-    }
-  };
+const AdModal = (props: AdModalProps) => {
+  // 解构出 confirmLoading
+  const { open, onCancel, onSubmit, initialValues, title, confirmLoading } = props;
+  
+  const { form, handleOk } = useAdModal(open, initialValues, onSubmit);
 
   return (
     <Modal
@@ -44,12 +26,10 @@ const AdModal = ({ open, onCancel, onSubmit, initialValues, title }: AdModalProp
       onCancel={onCancel}
       okText="提交"
       cancelText="取消"
+      confirmLoading={confirmLoading} // 绑定给 Antd Modal
     >
-      <Form
-        form={form}
-        layout="vertical"
-        name="ad_form"
-      >
+      {/* 表单内容 */}
+      <Form form={form} layout="vertical" name="ad_form">
         <Form.Item
           name="title"
           label="广告标题"

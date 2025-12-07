@@ -1,108 +1,66 @@
-import { useState } from 'react';
-import { Empty, message } from 'antd';
-import { useAdStore } from '@/store/useAdStore';
+import { Empty, Spin } from 'antd'; // 引入 Spin 组件
 import MainLayout from '@/layouts/MainLayout';
 import AdCard from '@/components/AdCard';
 import AdModal from '@/components/AdModal';
-import type { Ad, AdFormData } from '@/types';
+import { useAdList } from './useAdList';
 import styles from './AdList.module.scss';
 
 const AdList = () => {
-  const { ads, addAd, updateAd, deleteAd, incrementClick } = useAdStore();
-  
-  // 弹窗状态管理
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null); // 如果有值，则是编辑模式
-  const [initialValues, setInitialValues] = useState<AdFormData | null>(null);
-  const [modalTitle, setModalTitle] = useState('');
+  // 1. 解构新增的 isLoading
+  const { ads, isLoading, modal, actions } = useAdList();
 
-  // 1. 处理新增点击
-  const handleAddClick = () => {
-    setEditingId(null);
-    setInitialValues(null);
-    setModalTitle('新增广告');
-    setIsModalOpen(true);
-  };
-
-  // 2. 处理编辑点击
-  const handleEditClick = (ad: Ad) => {
-    setEditingId(ad.id);
-    const { id, clicked, createdAt, ...formData } = ad; // 排除不需要表单编辑的字段
-    setInitialValues(formData);
-    setModalTitle('编辑广告');
-    setIsModalOpen(true);
-  };
-
-  // 3. 处理复制点击
-  const handleCopyClick = (ad: Ad) => {
-    setEditingId(null); // 复制视为新增，没有 ID
-    const { id, clicked, createdAt, ...formData } = ad;
-    setInitialValues({ ...formData, title: `${formData.title} (副本)` }); // 贴心地加个后缀
-    setModalTitle('复制广告');
-    setIsModalOpen(true);
-  };
-
-  // 4. 处理删除
-  const handleDeleteClick = (id: string) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: '删除后无法恢复，确定要删除这条广告吗？',
-      onOk: () => {
-        deleteAd(id);
-        message.success('删除成功');
-      }
-    });
-  };
-
-  // 5. 处理卡片点击（跳转 + 计费）
-  const handleCardClick = (id: string, url: string) => {
-    incrementClick(id);
-    window.open(url, '_blank');
-  };
-
-  // 6. 处理表单提交
-  const handleSubmit = (values: AdFormData) => {
-    if (editingId) {
-      updateAd(editingId, values);
-      message.success('更新成功');
-    } else {
-      addAd(values);
-      message.success('创建成功');
+  // 2. 封装内容渲染逻辑
+  const renderContent = () => {
+    // 如果正在首次加载，显示居中的 Loading
+    if (isLoading) {
+      return (
+        <div style={{ textAlign: 'center', padding: '100px 0' }}>
+          <Spin size="large" tip="正在加载广告数据..." />
+        </div>
+      );
     }
-    setIsModalOpen(false);
+
+    // 如果没有数据
+    if (ads.length === 0) {
+      return (
+        <Empty 
+          description="暂无广告，快去创建第一条吧！" 
+          className={styles.emptyState} 
+        />
+      );
+    }
+
+    // 渲染列表
+    return (
+      <div className={styles.grid}>
+        {ads.map((ad) => (
+          <AdCard
+            key={ad.id}
+            ad={ad}
+            onEdit={actions.onEdit}
+            onCopy={actions.onCopy}
+            onDelete={actions.onDelete}
+            onClick={actions.onClick}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
-    <MainLayout onAddClick={handleAddClick}>
-      {ads.length === 0 ? (
-        <Empty description="暂无广告，快去创建第一条吧！" className={styles.emptyState} />
-      ) : (
-        <div className={styles.grid}>
-          {ads.map((ad) => (
-            <AdCard
-              key={ad.id}
-              ad={ad}
-              onEdit={handleEditClick}
-              onCopy={handleCopyClick}
-              onDelete={handleDeleteClick}
-              onClick={handleCardClick}
-            />
-          ))}
-        </div>
-      )}
+    <MainLayout onAddClick={actions.onAdd}>
+      {renderContent()}
 
       <AdModal
-        title={modalTitle}
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
-        initialValues={initialValues}
+        title={modal.title}
+        open={modal.isOpen}
+        onCancel={modal.close}
+        onSubmit={modal.submit}
+        initialValues={modal.initialValues}
+        confirmLoading={modal.isSubmitting} // 3. 传入提交 loading 状态
       />
     </MainLayout>
   );
 };
-
-// 这里的 Modal 是为了 confirm 用的，需要从 antd 引入
-import { Modal } from 'antd'; 
 
 export default AdList;
