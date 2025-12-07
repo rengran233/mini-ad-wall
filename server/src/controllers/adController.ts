@@ -37,7 +37,7 @@ export const AdController = {
   async createAd(ctx: Context) {
     try {
       // Koa-bodyparser 会把数据解析到 ctx.request.body
-      const body = (ctx.request as any).body;;
+      const body = ctx.request.body;
 
       // 简单校验
       if (!body.title || !body.content || !body.url || body.pricing === undefined) {
@@ -73,7 +73,7 @@ export const AdController = {
   async updateAd(ctx: Context) {
     try {
       const { id } = ctx.params;
-      const body = (ctx.request as any).body;
+      const body = ctx.request.body;
 
       const updatedAd = await prisma.ad.update({
         where: { id },

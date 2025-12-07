@@ -75,3 +75,5 @@ temp/
 coverage/
 cypress/videos/
 cypress/screenshots/
+
+架构思想.md
