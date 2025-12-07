@@ -46,4 +46,16 @@ export const adApi = {
     const res = await apiClient.post<ApiResponse<Ad>>(`/ads/${id}/click`);
     return res.data.data;
   },
+
+  // [新增] 上传文件
+  uploadFile: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // 注意：Content-Type 设为 multipart/form-data 通常由浏览器自动设置，但手动指定也行
+    const res = await apiClient.post<{code: number, data: {url: string}}>('/ads/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data.data.url;
+  },
 };

@@ -1,6 +1,11 @@
-import { useEffect } from 'react';
-import { Form } from 'antd';
+import { useState, useEffect } from 'react';
+import { Form, message } from 'antd';
+import type { UploadProps } from 'antd';
+import { adApi } from '@/api/ads';
 import type { AdFormData } from '@/types';
+
+// 从 UploadProps 中提取 customRequest 的参数类型
+type UploadRequestOption = Parameters<NonNullable<UploadProps['customRequest']>>[0];
 
 export const useAdModal = (
   open: boolean, 
@@ -8,6 +13,7 @@ export const useAdModal = (
   onSubmit: (values: AdFormData) => void
 ) => {
   const [form] = Form.useForm();
+  const [isUploading, setIsUploading] = useState(false);
 
   // 监听打开状态并重置/填充表单
   useEffect(() => {
@@ -32,8 +38,36 @@ export const useAdModal = (
     }
   };
 
+  // 3. [新增] 视频上传逻辑
+  // 这个函数将作为 props 传给 UI，UI 不需要知道它是怎么上传的
+  const handleUploadVideo = async (options: UploadRequestOption) => {
+    const { file, onSuccess, onError } = options;
+    setIsUploading(true);
+
+    try {
+      // 调用 API
+      const url = await adApi.uploadFile(file as File);
+      
+      // 逻辑副作用：上传成功后，自动把 URL 填入表单的 'video' 字段
+      form.setFieldValue('video', url);
+      
+      // 通知 UI 上传组件完成
+      onSuccess?.(url);
+      message.success('视频上传成功');
+    } catch (err) {
+      onError?.(err as Error);
+      message.error('视频上传失败，请重试');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return {
     form,
-    handleOk
+    handleOk,
+    upload: {
+      loading: isUploading,
+      handleUpload: handleUploadVideo,
+    }
   };
 };

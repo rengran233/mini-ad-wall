@@ -15,6 +15,7 @@ model Ad {
   content   String
   url       String
   pricing   Float    // 小数
+  video     String?  // 视频URL
   clicked   Int      @default(0) // 默认 0
   createdAt DateTime @default(now()) // 自动记录创建时间
 }

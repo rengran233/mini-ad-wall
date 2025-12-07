@@ -1,6 +1,5 @@
 import type { Context } from 'koa';
-import prisma from '../db/index'; // 注意：ESM 环境下本地导入可能需要写 .js 后缀，或者依靠 tsx 处理
-// 如果 tsx 报错找不到模块，尝试去掉 .js，视具体配置而定。通常写 .js 是 ESM 标准。
+import prisma from '../db/index'; 
 
 // 复用一下简单的排序算法逻辑
 const calculateScore = (pricing: number, clicked: number): number => {
@@ -53,6 +52,7 @@ export const AdController = {
           content: body.content,
           url: body.url,
           pricing: parseFloat(body.pricing), // 确保是数字
+          video: body.video,
           clicked: 0,
         }
       });
@@ -83,6 +83,7 @@ export const AdController = {
           content: body.content,
           url: body.url,
           pricing: body.pricing ? parseFloat(body.pricing) : undefined,
+          video: body.video,
         }
       });
 
@@ -140,5 +141,24 @@ export const AdController = {
       ctx.status = 500;
       ctx.body = { code: 500, message: 'Failed to register click' };
     }
-  }
+  },
+
+  async uploadFile(ctx: Context) {
+    // @koa/multer 会把文件信息挂载到 ctx.request.file (注意是 file 不是 files，因为是 single)
+    const file = (ctx.request as any).file; 
+    if (!file) {
+      ctx.status = 400;
+      ctx.body = { code: 400, message: 'No file uploaded' };
+      return;
+    }
+
+    // 返回可访问的 URL
+    const fileUrl = `http://localhost:3000/uploads/${file.filename}`;
+    
+    ctx.body = {
+      code: 0,
+      data: { url: fileUrl },
+      message: 'Upload success'
+    };
+  },
 };
