@@ -8,7 +8,6 @@ import {
   DollarOutlined 
 } from '@ant-design/icons';
 import type { Ad } from '@/types';
-import { calculateScore } from '@/utils/ranking';
 import styles from './AdCard.module.scss';
 
 const { Meta } = Card;
@@ -23,9 +22,6 @@ interface AdCardProps {
 }
 
 const AdCard = ({ ad, onEdit, onDelete, onCopy, onClick }: AdCardProps) => {
-  // 计算当前分数用于展示 (方便调试)
-  const score = calculateScore(ad.pricing, ad.clicked);
-
   const handleCardClick = () => {
     onClick(ad.id, ad.url);
   };
@@ -79,9 +75,6 @@ const AdCard = ({ ad, onEdit, onDelete, onCopy, onClick }: AdCardProps) => {
           prefix={<FireOutlined />} 
           styles={{ content: { fontSize: 16, color: '#cf1322' } }}
         />
-        <div className={styles.score}>
-          <small>Score: {score.toFixed(2)}</small>
-        </div>
       </div>
     </Card>
   );
