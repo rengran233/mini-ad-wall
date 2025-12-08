@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
 import { Modal, Button } from 'antd';
 import { ArrowRightOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { Ad } from '@/types';
+import { useVideoModal } from './useVideoModal';
 import styles from './VideoModal.module.scss'; // 稍后定义样式
 
 interface VideoModalProps {
@@ -10,47 +10,7 @@ interface VideoModalProps {
 }
 
 const VideoModal = ({ ad, onClose }: VideoModalProps) => {
-  // [新增] 是否显示结算层
-  const [showEndCard, setShowEndCard] = useState(false);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // 当弹窗打开时，自动播放
-  useEffect(() => {
-    if (ad && videoRef.current) {
-      videoRef.current.play().catch(() => {
-        // 自动播放失败（浏览器策略），静音重试
-        videoRef.current!.muted = true;
-        videoRef.current!.play();
-      });
-    }
-  }, [ad]);
-
-  const handleEnded = () => {
-    if (!ad) return;
-    // 播放结束，不跳转，而是显示结算层
-    setShowEndCard(true);
-    // 退出全屏 (如果浏览器允许 JS 退出)
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
-  };
-
-  // 跳转落地页
-  const handleJump = () => {
-    if (!ad) return;
-    window.open(ad.url, '_blank');
-    onClose();
-  };
-
-  // 重播视频
-  const handleReplay = () => {
-    setShowEndCard(false);
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
-    }
-  };
+  const { videoRef, showEndCard, handlers } = useVideoModal(ad, onClose);
 
   return (
     <Modal
@@ -70,7 +30,7 @@ const VideoModal = ({ ad, onClose }: VideoModalProps) => {
             src={ad.video}
             controls={!showEndCard} // 显示结算层时隐藏原生控件
             className={styles.video}
-            onEnded={handleEnded}
+            onEnded={handlers.onEnded}
           />
 
           {/* 添加一个悬浮按钮，允许用户提前跳转 */}
@@ -79,7 +39,7 @@ const VideoModal = ({ ad, onClose }: VideoModalProps) => {
             shape="round" 
             icon={<ArrowRightOutlined />} 
             className={styles.jumpBtn}
-            onClick={handleJump}
+            onClick={handlers.onJump}
           >
             访问落地页
           </Button>
@@ -92,7 +52,7 @@ const VideoModal = ({ ad, onClose }: VideoModalProps) => {
                 <div className={styles.buttons}>
                   <Button 
                     icon={<ReloadOutlined />} 
-                    onClick={handleReplay}
+                    onClick={handlers.onReplay}
                     size="large"
                     ghost // 透明幽灵按钮
                   >
@@ -101,7 +61,7 @@ const VideoModal = ({ ad, onClose }: VideoModalProps) => {
                   <Button 
                     type="primary" 
                     icon={<ArrowRightOutlined />} 
-                    onClick={handleJump}
+                    onClick={handlers.onJump}
                     size="large"
                   >
                     立即查看
