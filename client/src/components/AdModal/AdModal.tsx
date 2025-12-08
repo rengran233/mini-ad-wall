@@ -68,8 +68,8 @@ const AdModal = (props: AdModalProps) => {
         </Form.Item>
 
         {/* --- 视频上传区域 --- */}
-        <Form.Item label="广告视频" style={{ marginBottom: 0 }}>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+        <Form.Item label="广告视频">
+          <div className={styles.uploadContainer}>
             {/* 上传按钮 */}
             <Form.Item
               name="video_file" // 这是一个虚字段，仅用于控制 Upload 组件显示
@@ -104,13 +104,13 @@ const AdModal = (props: AdModalProps) => {
           {({ getFieldValue }) => {
             const videoUrl = getFieldValue('video');
             return videoUrl ? (
-              <div style={{ marginTop: 12, marginBottom: 24 }}>
+              <div className={styles.previewWrapper}>
                 <video 
                   src={videoUrl} 
                   controls 
-                  style={{ width: '100%', borderRadius: 8, maxHeight: 200, objectFit: 'cover', background: '#000' }} 
+                  className={styles.videoPlayer}
                 />
-                <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+                <div className={styles.fileName}>
                   当前视频: {videoUrl.split('/').pop()}
                 </div>
               </div>
