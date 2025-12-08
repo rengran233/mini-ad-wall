@@ -11,9 +11,20 @@ export const useAdModal = (
   open: boolean, 
   initialValues: AdFormData | null | undefined, 
   onSubmit: (values: AdFormData) => void
-) => {
+  ) => {
   const [form] = Form.useForm();
-  const [isUploading, setIsUploading] = useState(false);
+
+  // react query管理状态
+  const uploadMutation = useMutation({
+    mutationFn: adApi.uploadFile,
+    onSuccess: (url) => {
+      form.setFieldValue('video', url);
+      message.success('视频上传成功');
+    },
+    onError: () => {
+      message.error('视频上传失败，请重试');
+    },
+  });
 
   // 监听打开状态并重置/填充表单
   useEffect(() => {
@@ -25,6 +36,16 @@ export const useAdModal = (
       }
     }
   }, [open, initialValues, form]);
+
+
+  const handleUploadVideo = (options: UploadRequestOption) => {
+    const { file, onSuccess, onError } = options;
+    
+    uploadMutation.mutate(file as File, {
+      onSuccess: (url) => onSuccess?.(url),
+      onError: (err) => onError?.(err),
+    });
+  };
 
   // 处理提交逻辑
   const handleOk = async () => {
@@ -38,35 +59,11 @@ export const useAdModal = (
     }
   };
 
-  // 3. [新增] 视频上传逻辑
-  // 这个函数将作为 props 传给 UI，UI 不需要知道它是怎么上传的
-  const handleUploadVideo = async (options: UploadRequestOption) => {
-    const { file, onSuccess, onError } = options;
-    setIsUploading(true);
-
-    try {
-      // 调用 API
-      const url = await adApi.uploadFile(file as File);
-      
-      // 逻辑副作用：上传成功后，自动把 URL 填入表单的 'video' 字段
-      form.setFieldValue('video', url);
-      
-      // 通知 UI 上传组件完成
-      onSuccess?.(url);
-      message.success('视频上传成功');
-    } catch (err) {
-      onError?.(err as Error);
-      message.error('视频上传失败，请重试');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   return {
     form,
     handleOk,
     upload: {
-      loading: isUploading,
+      loading: uploadMutation.inPending,
       handleUpload: handleUploadVideo,
     }
   };
