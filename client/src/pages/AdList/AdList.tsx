@@ -2,12 +2,13 @@ import { Empty, Spin } from 'antd'; // 引入 Spin 组件
 import MainLayout from '@/layouts/MainLayout';
 import AdCard from '@/components/AdCard';
 import AdModal from '@/components/AdModal';
+import VideoModal from '@/components/VideoModal';
 import { useAdList } from './useAdList';
 import styles from './AdList.module.scss';
 
 const AdList = () => {
   // 1. 解构新增的 isLoading
-  const { ads, isLoading, modal, actions } = useAdList();
+  const { ads, isLoading, modal, videoModal, actions } = useAdList();
 
   // 2. 封装内容渲染逻辑
   const renderContent = () => {
@@ -49,8 +50,9 @@ const AdList = () => {
 
   return (
     <MainLayout onAddClick={actions.onAdd}>
+      {/* 广告内容 */}
       {renderContent()}
-
+      {/* 表单 */}
       <AdModal
         title={modal.title}
         open={modal.isOpen}
@@ -58,6 +60,11 @@ const AdList = () => {
         onSubmit={modal.submit}
         initialValues={modal.initialValues}
         confirmLoading={modal.isSubmitting} // 3. 传入提交 loading 状态
+      />
+      {/* [新增] 视频播放弹窗 */}
+      <VideoModal 
+        ad={videoModal.ad}
+        onClose={videoModal.close}
       />
     </MainLayout>
   );

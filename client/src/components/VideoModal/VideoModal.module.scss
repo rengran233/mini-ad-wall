@@ -1,0 +1,37 @@
+.container {
+  position: relative;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.video {
+  width: 100%;
+  max-height: 60vh; /* 限制高度，防止爆屏 */
+  display: block;
+}
+
+.jumpBtn {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  z-index: 10;
+  opacity: 0.8;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+/* 覆盖 Antd Modal 默认样式的 Hack，让它看起来更像媒体播放器 */
+:global(.ant-modal-content) {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+:global(.ant-modal-close) {
+  color: #fff !important;
+  top: -30px !important; /* 把关闭按钮移到外面 */
+}

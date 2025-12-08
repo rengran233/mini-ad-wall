@@ -59,6 +59,8 @@ export const useAdList = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [initialValues, setInitialValues] = useState<AdFormData | null>(null);
   const [modalTitle, setModalTitle] = useState('');
+  // [新增] 当前正在播放视频的广告
+  const [playingAd, setPlayingAd] = useState<Ad | null>(null);
 
   // --- 4. 事件处理函数 (逻辑微调) ---
 
@@ -97,7 +99,17 @@ export const useAdList = () => {
 
   const handleAdClick = (id: string, url: string) => {
     clickMutation.mutate(id); // 调用 mutation
-    window.open(url, '_blank');
+    // 找到当前点击的广告对象
+    const targetAd = ads.find(a => a.id === id);
+    if (!targetAd) return;
+
+    if (targetAd.video) {
+      // 场景 A: 有视频 -> 打开播放弹窗
+      setPlayingAd(targetAd);
+    } else {
+      // 场景 B: 没视频 -> 直接跳转
+      window.open(targetAd.url, '_blank');
+    }
   };
 
   const handleFormSubmit = (values: AdFormData) => {
@@ -119,6 +131,10 @@ export const useAdList = () => {
       close: () => setIsModalOpen(false),
       submit: handleFormSubmit,
       isSubmitting: createMutation.isPending || updateMutation.isPending, // 暴露提交 loading
+    },
+    videoModal: { // 暴露给 UI
+      ad: playingAd,
+      close: () => setPlayingAd(null),
     },
     actions: {
       onAdd: openAddModal,
