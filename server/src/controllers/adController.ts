@@ -1,5 +1,6 @@
 import type { Context } from 'koa';
 import prisma from '../db/index'; 
+import { AD_FORM_SCHEMA } from '../config/formSchema';
 
 // 复用一下简单的排序算法逻辑
 const calculateScore = (pricing: number, clicked: number): number => {
@@ -7,6 +8,14 @@ const calculateScore = (pricing: number, clicked: number): number => {
 };
 
 export const AdController = {
+  async getFormSchema(ctx: Context) {
+    ctx.body = {
+      code: 0,
+      data: AD_FORM_SCHEMA, 
+      message: 'Success'
+    };
+  },
+
   // 1. 获取广告列表 (GET /ads)
   async getAds(ctx: Context) {
     try {

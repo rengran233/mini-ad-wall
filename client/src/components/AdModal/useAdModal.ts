@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Form, message } from 'antd';
 import type { UploadProps } from 'antd';
 import { adApi } from '@/api/ads';
 import type { AdFormData } from '@/types';
+import type { FormFieldConfig } from '@/types';
 
 // 从 UploadProps 中提取 customRequest 的参数类型
 type UploadRequestOption = Parameters<NonNullable<UploadProps['customRequest']>>[0];
@@ -11,8 +13,16 @@ export const useAdModal = (
   open: boolean, 
   initialValues: AdFormData | null | undefined, 
   onSubmit: (values: AdFormData) => void
-  ) => {
+) => {
   const [form] = Form.useForm();
+
+  // 1. [新增] 获取表单配置 Schema
+  const { data: schema = [], isLoading: isSchemaLoading } = useQuery({
+    queryKey: ['adFormSchema'],
+    queryFn: adApi.getFormSchema,
+    staleTime: 1000 * 60 * 60, // 缓存 1 小时
+    enabled: open, // 只有打开弹窗时才请求
+  });
 
   // react query管理状态
   const uploadMutation = useMutation({
@@ -65,6 +75,11 @@ export const useAdModal = (
     upload: {
       loading: uploadMutation.inPending,
       handleUpload: handleUploadVideo,
-    }
+    },
+    // [新增] 返回 Schema 数据和加载状态
+    schema: {
+      data: schema,
+      loading: isSchemaLoading,
+    },
   };
 };

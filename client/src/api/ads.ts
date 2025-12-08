@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { Ad, AdFormData } from '@/types';
+import type { FormFieldConfig } from '@/types';
 
 // 配置基础实例
 const apiClient = axios.create({
@@ -57,5 +58,11 @@ export const adApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data.data.url;
+  },
+
+  // [新增] 获取表单配置
+  getFormSchema: async () => {
+    const res = await apiClient.get<ApiResponse<FormFieldConfig[]>>('/ads/schema');
+    return res.data.data;
   },
 };

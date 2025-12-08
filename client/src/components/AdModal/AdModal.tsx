@@ -1,4 +1,4 @@
-import { Upload, Button, Modal, Form, Input, InputNumber } from 'antd';
+import { Upload, Button, Modal, Form, Input, InputNumber, Spin } from 'antd';
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import type { AdFormData } from '@/types';
 import { useAdModal } from './useAdModal';
@@ -18,7 +18,70 @@ const AdModal = (props: AdModalProps) => {
   const { open, onCancel, onSubmit, initialValues, title, confirmLoading } = props;
   
   // 从 Hook 获取逻辑与状态
-  const { form, handleOk, upload } = useAdModal(open, initialValues, onSubmit);
+  const { form, handleOk, upload, schema } = useAdModal(open, initialValues, onSubmit);
+
+  // 2. 动态组件渲染器
+  const renderFormItem = (field: FormFieldConfig) => {
+    const commonProps = { ...field.props };
+
+    switch (field.component) {
+      case 'Input':
+        return <Input {...commonProps} />;
+      
+      case 'TextArea':
+        return <Input.TextArea {...commonProps} />;
+      
+      case 'InputNumber':
+        return <InputNumber {...commonProps} />;
+      
+      case 'VideoUpload':
+        // 视频上传比较特殊，逻辑较重，这里保留之前的 JSX 结构，但由配置触发
+        return (
+          <div className={styles.uploadContainer}>
+            <Form.Item
+              name="video_file"
+              valuePropName="fileList"
+              getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+              noStyle
+            >
+              <Upload
+                maxCount={1}
+                accept="video/*"
+                showUploadList={false}
+                customRequest={upload.handleUpload}
+              >
+                <Button 
+                  icon={upload.loading ? <LoadingOutlined /> : <UploadOutlined />}
+                  disabled={upload.loading}
+                >
+                  {upload.loading ? '上传中...' : '上传视频'}
+                </Button>
+              </Upload>
+            </Form.Item>
+            {/* 隐藏字段存储 URL */}
+            <Form.Item name={field.name} noStyle hidden>
+              <Input />
+            </Form.Item>
+            
+            {/* 预览区域 */}
+            <Form.Item noStyle shouldUpdate={(prev, curr) => prev[field.name] !== curr[field.name]}>
+              {({ getFieldValue }) => {
+                const videoUrl = getFieldValue(field.name);
+                return videoUrl ? (
+                  <div className={styles.previewWrapper}>
+                    <video src={videoUrl} controls className={styles.videoPlayer} />
+                    <div className={styles.fileName}>当前视频: {videoUrl.split('/').pop()}</div>
+                  </div>
+                ) : null;
+              }}
+            </Form.Item>
+          </div>
+        );
+
+      default:
+        return <Input {...commonProps} />;
+    }
+  };
 
   return (
     <Modal
@@ -30,107 +93,22 @@ const AdModal = (props: AdModalProps) => {
       cancelText="取消"
       confirmLoading={confirmLoading} // 绑定给 Antd Modal
     >
-      {/* 表单内容 */}
-      <Form form={form} layout="vertical" name="ad_form">
-        <Form.Item
-          name="title"
-          label="广告标题"
-          rules={[{ required: true, message: '请输入广告标题' }]}
-        >
-          <Input placeholder="例如：极简广告" />
-        </Form.Item>
-
-        <Form.Item
-          name="publisher"
-          label="发布者"
-          rules={[{ required: true, message: '请输入发布者名称' }]}
-        >
-          <Input placeholder="例如：字节广告君" />
-        </Form.Item>
-
-        <Form.Item
-          name="content"
-          label="广告文案"
-          rules={[{ required: true, message: '请输入广告内容' }]}
-        >
-          <Input.TextArea rows={4} placeholder="描述你的广告..." />
-        </Form.Item>
-
-        <Form.Item
-          name="url"
-          label="落地页链接"
-          rules={[
-            { required: true, message: '请输入跳转链接' },
-            { type: 'url', message: '请输入合法的 URL (http://...)' }
-          ]}
-        >
-          <Input placeholder="https://example.com" />
-        </Form.Item>
-
-        {/* --- 视频上传区域 --- */}
-        <Form.Item label="广告视频">
-          <div className={styles.uploadContainer}>
-            {/* 上传按钮 */}
+      {schema.loading ? (
+        <div style={{ textAlign: 'center', padding: '20px' }}><Spin /></div>
+      ) : (
+        <Form form={form} layout="vertical" name="ad_form">
+          {schema.data.map((field) => (
             <Form.Item
-              name="video_file" // 这是一个虚字段，仅用于控制 Upload 组件显示
-              valuePropName="fileList"
-              getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-              noStyle
+              key={field.name}
+              name={field.name}
+              label={field.label}
+              rules={field.rules}
             >
-              <Upload
-                maxCount={1}
-                accept="video/*"
-                showUploadList={false} // 我们自定义预览，不使用默认列表
-                customRequest={upload.handleUpload} // 直接绑定 Hook 中的逻辑
-              >
-                <Button 
-                  icon={upload.loading ? <LoadingOutlined /> : <UploadOutlined />}
-                  disabled={upload.loading}
-                >
-                  {upload.loading ? '上传中...' : '上传视频'}
-                </Button>
-              </Upload>
+              {renderFormItem(field)}
             </Form.Item>
-
-            {/* 真正存储数据的隐藏字段 */}
-            <Form.Item name="video" noStyle hidden>
-              <Input />
-            </Form.Item>
-          </div>
-        </Form.Item>
-
-        {/* 视频预览区域：纯 UI 展示，依赖表单数据变化 */}
-        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.video !== curr.video}>
-          {({ getFieldValue }) => {
-            const videoUrl = getFieldValue('video');
-            return videoUrl ? (
-              <div className={styles.previewWrapper}>
-                <video 
-                  src={videoUrl} 
-                  controls 
-                  className={styles.videoPlayer}
-                />
-                <div className={styles.fileName}>
-                  当前视频: {videoUrl.split('/').pop()}
-                </div>
-              </div>
-            ) : null;
-          }}
-        </Form.Item>
-
-        <Form.Item
-          name="pricing"
-          label="出价 (元)"
-          rules={[{ required: true, message: '请输入出价' }]}
-        >
-          <InputNumber 
-            className={styles.fullWidth} 
-            min={0} 
-            step={0.1} 
-            placeholder="0.00" 
-          />
-        </Form.Item>
-      </Form>
+          ))}
+        </Form>
+      )}
     </Modal>
   );
 };

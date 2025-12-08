@@ -26,5 +26,6 @@ router.put('/:id', AdController.updateAd);      // PUT /ads/:id
 router.delete('/:id', AdController.deleteAd);   // DELETE /ads/:id
 router.post('/:id/click', AdController.clickAd); // POST /ads/:id/click
 router.post('/upload', upload.single('file'), AdController.uploadFile); // POST /ads/upload
+router.get('/schema', AdController.getFormSchema); // [新增] GET /ads/schema
 
 export default router;

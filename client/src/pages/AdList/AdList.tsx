@@ -16,7 +16,8 @@ const AdList = () => {
     if (isLoading) {
       return (
         <div style={{ textAlign: 'center', padding: '100px 0' }}>
-          <Spin size="large" tip="正在加载广告数据..." />
+          <Spin size="large" />
+          <div>正在加载广告数据</div>
         </div>
       );
     }
