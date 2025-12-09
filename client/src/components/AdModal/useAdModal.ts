@@ -73,7 +73,7 @@ export const useAdModal = (
     form,
     handleOk,
     upload: {
-      loading: uploadMutation.inPending,
+      loading: uploadMutation.isPending,
       handleUpload: handleUploadVideo,
     },
     // [新增] 返回 Schema 数据和加载状态

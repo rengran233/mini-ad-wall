@@ -18,6 +18,7 @@ export const AdController = {
     };
   },
 
+  // ------ 操作数据库 ------
   // 1. 获取广告列表 (GET /ads)
   async getAds(ctx: Context) {
     try {
