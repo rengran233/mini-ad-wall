@@ -1,6 +1,8 @@
 import type { Context } from 'koa';
 import prisma from '../db/index'; 
 import { AD_FORM_SCHEMA } from '../config/formSchema';
+import fs from 'fs'; 
+import path from 'path';
 
 // 复用一下简单的排序算法逻辑
 const calculateScore = (pricing: number, clicked: number): number => {
@@ -112,6 +114,42 @@ export const AdController = {
   async deleteAd(ctx: Context) {
     try {
       const { id } = ctx.params;
+
+      // ------ 先处理视频文件删除 ------
+      // 查询广告信息，获取视频URL
+      const ad = await prisma.ad.findUnique({
+        where: { id }
+      })
+
+      if (!ad) {
+        ctx.status = 404;
+        ctx.body = { code: 404, message: 'Ad not found' };
+        return;
+      }
+
+      if (ad.video) {
+        try {
+          // 提取文件名
+          const fileName = ad.video.split('/').pop();
+  
+          if (fileName) {
+            // 构造文件路径
+            // uploads应在server根目录下
+            const filePath = path.join(process.cwd(), 'uploads', fileName);
+  
+            // 检查文件是否存在并删除
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+              console.log(`Deleted video file: ${filePath}`);
+            }
+          }
+        } catch(err) {
+          // 文件删除失败也不应该阻止数据库记录删除
+          console.error('Failed to delete video file:', err);
+        }
+      }
+
+      // ------ 删除数据库记录 ------
       await prisma.ad.delete({
         where: { id }
       });
