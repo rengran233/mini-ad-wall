@@ -59,7 +59,7 @@ const AdModal = (props: AdModalProps) => {
               </Upload>
             </Form.Item>
             {/* 隐藏字段存储 URL */}
-            <Form.Item name={field.name} noStyle hidden>
+            <Form.Item name={field.name} noStyle hidden rules={field.rules}>
               <Input />
             </Form.Item>
             
@@ -106,16 +106,21 @@ const AdModal = (props: AdModalProps) => {
         <div style={{ textAlign: 'center', padding: '20px' }}><Spin /></div>
       ) : (
         <Form form={form} layout="vertical" name="ad_form">
-          {schema.data.map((field) => (
-            <Form.Item
-              key={field.name}
-              name={field.name}
-              label={field.label}
-              rules={field.rules}
-            >
-              {renderFormItem(field)}
-            </Form.Item>
-          ))}
+          {schema.data.map((field) => {
+            // 如果是 VideoUpload，外层 Form.Item 不绑定 name，防止捕获原生 file input 的 onChange 事件
+            const isVideo = field.component === 'VideoUpload';
+
+            return(
+              <Form.Item
+                key={field.name}
+                name={isVideo ? undefined : field.name}
+                label={field.label}
+                rules={isVideo ? undefined : field.rules}
+              >
+                {renderFormItem(field)}
+              </Form.Item>
+            )
+          })}
         </Form>
       )}
     </Modal>

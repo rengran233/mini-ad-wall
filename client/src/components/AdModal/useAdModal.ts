@@ -37,14 +37,14 @@ export const useAdModal = (
 
   // 监听打开状态并重置/填充表单
   useEffect(() => {
-    if (open) {
+    if (open && !isSchemaLoading) {
       if (initialValues) {
         form.setFieldsValue(initialValues);
       } else {
         form.resetFields();
       }
     }
-  }, [open, initialValues, form]);
+  }, [open, initialValues, form, isSchemaLoading]);
 
 
   const handleUploadVideo = (options: UploadRequestOption) => {
