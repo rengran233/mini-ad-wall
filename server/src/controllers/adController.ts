@@ -1,8 +1,9 @@
 import type { Context } from 'koa';
 import prisma from '../db/index'; 
-import { AD_FORM_SCHEMA } from '../config/formSchema';
+import { AD_FORM_SCHEMA } from '../constants/formSchema';
 import fs from 'fs'; 
 import path from 'path';
+import { envConfig } from '../config/env';
 
 // 复用一下简单的排序算法逻辑
 const calculateScore = (pricing: number, clicked: number): number => {
@@ -201,7 +202,7 @@ export const AdController = {
     }
 
     // 返回可访问的 URL
-    const fileUrl = `http://localhost:3000/uploads/${file.filename}`;
+    const fileUrl = `${envConfig.baseUrl}${envConfig.upload.urlPrefix}/${file.filename}`;
     
     ctx.body = {
       code: 0,

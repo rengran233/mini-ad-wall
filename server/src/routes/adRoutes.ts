@@ -1,15 +1,16 @@
 import Router from '@koa/router';
 import { AdController } from '../controllers/adController';
 import multer from '@koa/multer';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import { envConfig } from '../config/env';
 
 const router = new Router({ prefix: '/ads' }); // 所有路由前缀都是 /ads
 
 // 配置 Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // 保存路径
+        cb(null, envConfig.upload.dirName + '/'); // 保存路径
     },
     filename: (req, file, cb) => {
         // 生成唯一文件名: uuid + 原始后缀

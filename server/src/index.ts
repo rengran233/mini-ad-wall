@@ -1,20 +1,17 @@
 import fs from 'fs';
-import path from 'path';
-import app from './app'; // 导入配置好的 app
-
-const PORT = 3000;
+import app from './app'; 
+import { envConfig } from './config/env';
 
 // ------ 环境准备 ------
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 // 确保上传目录存在
-if (!fs.existsSync(UPLOAD_DIR)) {
-  console.log(`Creating upload directory: ${UPLOAD_DIR}`);
-  fs.mkdirSync(UPLOAD_DIR);
+if (!fs.existsSync(envConfig.upload.absolutePath)) {
+    console.log(`Creating upload directory: ${envConfig.upload.absolutePath}`);
+    fs.mkdirSync(envConfig.upload.absolutePath);
 }
 
 // ------ 启动服务 ------
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`- Uploads: http://localhost:${PORT}/uploads/`);
-  console.log(`- API:     http://localhost:${PORT}/ads`);
+app.listen(envConfig.port, () => {
+    console.log(`🚀 Server running at ${envConfig.baseUrl}`);
+    console.log(`- Uploads: ${envConfig.baseUrl}${envConfig.upload.urlPrefix}/`);
+    console.log(`- API:     ${envConfig.baseUrl}/ads`);
 });

@@ -4,14 +4,13 @@ import bodyParser from '@koa/bodyparser';
 import serve from 'koa-static';
 import mount from 'koa-mount'; 
 import adRoutes from './routes/adRoutes.js'; 
-import path from 'path';
+import { envConfig } from './config/env';
 
 const app = new Koa();
 
 // ------ 静态资源服务 ------
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 // 访问 http://localhost:3000/uploads/xxx.mp4 -> 映射到本地 uploads/xxx.mp4
-app.use(mount('/uploads', serve(UPLOAD_DIR)));
+app.use(mount(envConfig.upload.urlPrefix, serve(envConfig.upload.absolutePath)));
 
 // ------ 通用中间件 ------
 app.use(cors());
