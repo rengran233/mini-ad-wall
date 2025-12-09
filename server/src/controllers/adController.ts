@@ -131,19 +131,27 @@ export const AdController = {
 
       if (ad.video) {
         try {
-          // 提取文件名
-          const fileName = ad.video.split('/').pop();
-  
-          if (fileName) {
-            // 构造文件路径
-            // uploads应在server根目录下
-            const filePath = path.join(process.cwd(), 'uploads', fileName);
-  
-            // 检查文件是否存在并删除
-            if (fs.existsSync(filePath)) {
-              fs.unlinkSync(filePath);
-              console.log(`Deleted video file: ${filePath}`);
+          // 关键步骤：查询数据库中是否还有其他广告使用了同一个视频 URL
+          const usageCount = await prisma.ad.count({
+            where: {
+              video: ad.video,
+              // 排除当前正在删除的这条广告 ID (虽然逻辑上 count 包含它就是 >=1，不包含就是 >=0，这里直接查总数更直观)
             }
+          });
+
+          // 只有当数据库中只有 1 条记录（也就是当前这条）使用该视频时，才物理删除文件
+          // 如果 usageCount > 1，说明是副本，只删数据库记录，保留文件
+          if (usageCount <= 1) {
+            const fileName = ad.video.split('/').pop();
+            if (fileName) {
+              const filePath = path.join(process.cwd(), 'uploads', fileName);
+              if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                console.log(`Deleted video file: ${filePath}`);
+              }
+            }
+          } else {
+            console.log(`Skipped file deletion. Video is used by ${usageCount} ads.`);
           }
         } catch(err) {
           // 文件删除失败也不应该阻止数据库记录删除

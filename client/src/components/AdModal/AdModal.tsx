@@ -1,5 +1,5 @@
 import { Upload, Button, Modal, Form, Input, InputNumber, Spin } from 'antd';
-import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
+import { LoadingOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { AdFormData, FormFieldConfig } from '@/types';
 import { useAdModal } from './useAdModal';
 import styles from './AdModal.module.scss';
@@ -65,12 +65,21 @@ const AdModal = (props: AdModalProps) => {
             
             {/* 预览区域 */}
             <Form.Item noStyle shouldUpdate={(prev, curr) => prev[field.name] !== curr[field.name]}>
-              {({ getFieldValue }) => {
+              {({ getFieldValue, setFieldValue }) => {
                 const videoUrl = getFieldValue(field.name);
                 return videoUrl ? (
                   <div className={styles.previewWrapper}>
                     <video src={videoUrl} controls className={styles.videoPlayer} />
                     <div className={styles.fileName}>当前视频: {videoUrl.split('/').pop()}</div>
+                    {/* [新增] 删除按钮 */}
+                    <Button 
+                        type="link" 
+                        danger 
+                        icon={<DeleteOutlined />} 
+                        onClick={() => setFieldValue(field.name, null)}
+                      >
+                        移除视频
+                      </Button>
                   </div>
                 ) : null;
               }}
