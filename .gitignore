@@ -56,6 +56,9 @@ coverage/
 server/uploads/
 server/public/uploads/
 uploads/
+server/temp_uploads/
+server/public/temp_uploads/
+temp_uploads/
 
 # 进阶任务1：本地数据库文件 (LowDB / SQLite)
 # 你的测试数据不应该污染代码库

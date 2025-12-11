@@ -10,6 +10,39 @@ const calculateScore = (pricing: number, clicked: number): number => {
   return pricing + (pricing * clicked * 0.42);
 };
 
+// ------ 处理视频文件移动 ------
+const processVideoFile = (videoUrl: string | null | undefined): string | null | undefined => {
+  if (!videoUrl) return videoUrl;
+
+  // 检查 URL 是否指向临时目录
+  if (videoUrl.includes(envConfig.upload.tempUrlPrefix)) {
+    try {
+      // 从 URL 中提取文件名
+      const fileName = path.basename(videoUrl);
+      
+      const tempPath = path.join(envConfig.upload.tempAbsolutePath, fileName);
+      const finalPath = path.join(envConfig.upload.absolutePath, fileName);
+
+      // 如果临时文件存在，移动它
+      if (fs.existsSync(tempPath)) {
+        // 移动文件 (renameSync 在同一分区下是原子操作，相当于 mv)
+        fs.renameSync(tempPath, finalPath);
+        console.log(`Moved file from temp to final: ${fileName}`);
+        
+        // 返回新的正式 URL
+        return `${envConfig.baseUrl}${envConfig.upload.urlPrefix}/${fileName}`;
+      }
+    } catch (error) {
+      console.error('Error moving video file:', error);
+      // 如果移动失败，为了数据完整性，可能选择抛错或者保留原样
+      // 这里选择保留原样，虽然文件可能还在临时目录，但至少不会崩
+    }
+  }
+  
+  // 如果已经是正式目录的 URL，或者不是本站 URL，直接返回
+  return videoUrl;
+};
+
 export const AdController = {
   async getFormSchema(ctx: Context) {
     ctx.body = {
@@ -58,6 +91,9 @@ export const AdController = {
         return;
       }
 
+      // 处理视频文件移动
+      const finalVideoUrl = processVideoFile(body.video);
+
       const newAd = await prisma.ad.create({
         data: {
           title: body.title,
@@ -65,7 +101,7 @@ export const AdController = {
           content: body.content,
           url: body.url,
           pricing: parseFloat(body.pricing), // 确保是数字
-          video: body.video,
+          video: finalVideoUrl,
           clicked: 0,
         }
       });
@@ -88,6 +124,9 @@ export const AdController = {
       const { id } = ctx.params;
       const body = ctx.request.body;
 
+      // 处理视频文件移动 (如果用户上传了新视频)
+      const finalVideoUrl = processVideoFile(body.video);
+
       const updatedAd = await prisma.ad.update({
         where: { id },
         data: {
@@ -96,7 +135,7 @@ export const AdController = {
           content: body.content,
           url: body.url,
           pricing: body.pricing ? parseFloat(body.pricing) : undefined,
-          video: body.video,
+          video: finalVideoUrl,
         }
       });
 
@@ -209,8 +248,8 @@ export const AdController = {
       return;
     }
 
-    // 返回可访问的 URL
-    const fileUrl = `${envConfig.baseUrl}${envConfig.upload.urlPrefix}/${file.filename}`;
+    // 返回临时URL
+    const fileUrl = `${envConfig.baseUrl}${envConfig.upload.tempUrlPrefix}/${file.filename}`;
     
     ctx.body = {
       code: 0,

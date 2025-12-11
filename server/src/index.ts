@@ -9,6 +9,12 @@ if (!fs.existsSync(envConfig.upload.absolutePath)) {
     fs.mkdirSync(envConfig.upload.absolutePath);
 }
 
+// 确保临时目录存在
+if (!fs.existsSync(envConfig.upload.tempAbsolutePath)) {
+    console.log(`Creating temp upload directory: ${envConfig.upload.tempAbsolutePath}`);
+    fs.mkdirSync(envConfig.upload.tempAbsolutePath);
+}
+
 // ------ 启动服务 ------
 app.listen(envConfig.port, () => {
     console.log(`🚀 Server running at ${envConfig.baseUrl}`);

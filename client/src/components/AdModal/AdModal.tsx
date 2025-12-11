@@ -45,6 +45,7 @@ const AdModal = (props: AdModalProps) => {
               noStyle
             >
               <Upload
+                multiple={true}
                 maxCount={1}
                 accept="video/*"
                 showUploadList={false}

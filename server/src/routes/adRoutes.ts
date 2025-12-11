@@ -10,7 +10,7 @@ const router = new Router({ prefix: '/ads' }); // 所有路由前缀都是 /ads
 // 配置 Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, envConfig.upload.dirName + '/'); // 保存路径
+        cb(null, envConfig.upload.tempAbsolutePath); // 保存路径
     },
     filename: (req, file, cb) => {
         // 生成唯一文件名: uuid + 原始后缀

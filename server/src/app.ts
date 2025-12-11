@@ -11,6 +11,7 @@ const app = new Koa();
 // ------ 静态资源服务 ------
 // 访问 http://localhost:3000/uploads/xxx.mp4 -> 映射到本地 uploads/xxx.mp4
 app.use(mount(envConfig.upload.urlPrefix, serve(envConfig.upload.absolutePath)));
+app.use(mount(envConfig.upload.tempUrlPrefix, serve(envConfig.upload.tempAbsolutePath)));
 
 // ------ 通用中间件 ------
 app.use(cors());
