@@ -59,7 +59,7 @@ export const useAdList = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [initialValues, setInitialValues] = useState<AdFormData | null>(null);
   const [modalTitle, setModalTitle] = useState('');
-  // [新增] 当前正在播放视频的广告
+  // 当前正在播放视频的广告
   const [playingAd, setPlayingAd] = useState<Ad | null>(null);
 
   // --- 4. 事件处理函数 (逻辑微调) ---
@@ -108,10 +108,6 @@ export const useAdList = () => {
     clickMutation.mutate(id); // 调用 mutation
     // 找到当前点击的广告对象
     const targetAd = ads.find(a => a.id === id);
-    // [新增调试日志]
-    console.log('👉 点击的广告数据:', targetAd);
-    console.log('👉 video字段类型:', typeof targetAd?.video);
-    console.log('👉 是否为数组:', Array.isArray(targetAd?.video));
     if (!targetAd) return;
 
     if (targetAd.video && targetAd.video.length > 0) {

@@ -10,7 +10,7 @@ interface AdModalProps {
   onSubmit: (values: AdFormData) => void;
   initialValues?: AdFormData | null;
   title: string;
-  confirmLoading?: boolean; // 新增属性
+  confirmLoading?: boolean; 
 }
 
 const AdModal = (props: AdModalProps) => {

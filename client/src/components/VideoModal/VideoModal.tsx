@@ -44,7 +44,7 @@ const VideoModal = ({ ad, onClose }: VideoModalProps) => {
             访问落地页
           </Button>
 
-          {/* [新增] 结算遮罩层 */}
+          {/* 结算遮罩层 */}
           {showEndCard && (
             <div className={styles.endCardOverlay}>
               <div className={styles.content}>

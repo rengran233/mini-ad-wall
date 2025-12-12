@@ -4,7 +4,7 @@ import type { Ad } from '@/types';
 export const useVideoModal = (ad: Ad | null, onClose: () => void) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showEndCard, setShowEndCard] = useState(false);
-  // [新增] 当前播放的视频 URL
+  // 当前播放的视频 URL
   const [currentSrc, setCurrentSrc] = useState<string | undefined>(undefined);
 
   // 1. 监听广告变化，重置状态并自动播放
@@ -12,7 +12,7 @@ export const useVideoModal = (ad: Ad | null, onClose: () => void) => {
     if (ad) {
       setShowEndCard(false);
 
-      // [新增] 随机逻辑
+      // 随机逻辑
       let src = '';
       if (Array.isArray(ad.video) && ad.video.length > 0) {
         const randomIndex = Math.floor(Math.random() * ad.video.length);

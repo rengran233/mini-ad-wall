@@ -48,7 +48,7 @@ export const adApi = {
     return res.data.data;
   },
 
-  // [新增] 上传文件
+  // 上传文件
   uploadFile: async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -60,7 +60,7 @@ export const adApi = {
     return res.data.data.url;
   },
 
-  // [新增] 获取表单配置
+  // 获取表单配置
   getFormSchema: async () => {
     const res = await apiClient.get<ApiResponse<FormFieldConfig[]>>('/ads/schema');
     return res.data.data;

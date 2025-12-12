@@ -60,7 +60,7 @@ const AdList = () => {
         initialValues={modal.initialValues}
         confirmLoading={modal.isSubmitting} // 3. 传入提交 loading 状态
       />
-      {/* [新增] 视频播放弹窗 */}
+      {/* 视频播放弹窗 */}
       <VideoModal 
         ad={videoModal.ad}
         onClose={videoModal.close}
