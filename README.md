@@ -54,6 +54,7 @@
 │   │   ├── config/         # 环境配置
 │   │   ├── constants/      # 常量 (表单Schema定义)
 │   │   ├── controllers/    # 业务逻辑控制器
+│   │   ├── utils/          # 工具函数
 │   │   └── routes/         # 路由定义
 │   └── uploads/            # [可自动生成]视频文件存储目录
 └── ...
@@ -68,26 +69,22 @@
 
 ### 启动步骤
 
-**1. 初始化后端 (Server)**
+#### 1. 安装依赖
+在根目录运行`npm install`，已配置workspaces
 
+#### 2. 启动前后端
+**后端**
 ```bash
 cd server
-npm install
-
-# 数据库迁移 (生成 SQLite 文件)
-npx prisma migrate dev --name init
-
+# 数据库迁移
+npx prisma migrate dev
 # 启动开发服务 (端口 3000)
 npm run dev
 ```
-
-**2. 初始化前端 (Client)**
-
+**前端**
 ```bash
 # 新开一个终端窗口
 cd client
-npm install
-
 # 启动开发服务 (端口 5173)
 npm run dev
 ```
