@@ -26,10 +26,10 @@ export const useAdModal = (
   // react query管理状态
   const uploadMutation = useMutation({
     mutationFn: adApi.uploadFile,
-    onSuccess: (url) => {
-      form.setFieldValue('video', url);
-      message.success('视频上传成功');
-    },
+    // onSuccess: (url) => {
+    //   form.setFieldValue('video', url);
+    //   message.success('视频上传成功');
+    // },
     onError: () => {
       message.error('视频上传失败，请重试');
     },
@@ -40,6 +40,20 @@ export const useAdModal = (
     if (open && !isSchemaLoading) {
       if (initialValues) {
         form.setFieldsValue(initialValues);
+
+        // [修改] 处理回显：将 URL 数组转换为 Upload 组件需要的 fileList 格式
+        const videoUrls = initialValues.video || [];
+        const fileList = videoUrls.map((url, index) => ({
+          uid: `-${index}`, // 负数 ID 防止冲突
+          name: `视频 ${index + 1}`,
+          status: 'done',
+          url: url,
+        }));
+
+        form.setFieldsValue({
+          ...initialValues,
+          video_file: fileList, // 填充 Upload 组件
+        });
       } else {
         form.resetFields();
       }
@@ -51,7 +65,17 @@ export const useAdModal = (
     const { file, onSuccess, onError } = options;
     
     uploadMutation.mutate(file as File, {
-      onSuccess: (url) => onSuccess?.(url),
+      onSuccess: (url) => {
+        // 更新fileList和hidden input
+        onSuccess?.(url)
+
+        // 获取当前的 video 列表
+        const currentVideos = form.getFieldValue('video') || [];
+        const newVideos = [...currentVideos, url];
+        form.setFieldValue('video', newVideos);
+        
+        message.success('视频上传成功');
+      },
       onError: (err) => onError?.(err),
     });
   };
@@ -60,9 +84,9 @@ export const useAdModal = (
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      onSubmit(values);
-      // 注意：这里不再重置表单，因为父组件可能会在提交成功后关闭弹窗，
-      // 或者在提交失败时保留数据。重置逻辑交给 useEffect(open) 处理更安全。
+      // 移除辅助字段 video_file，只提交 video (URL数组)
+      const { video_file, ...submitData } = values;
+      onSubmit(submitData as AdFormData);
     } catch (info) {
       console.log('Validate Failed:', info);
     }

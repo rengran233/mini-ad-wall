@@ -16,24 +16,20 @@ interface AdModalProps {
 const AdModal = (props: AdModalProps) => {
   // 解构出 confirmLoading
   const { open, onCancel, onSubmit, initialValues, title, confirmLoading } = props;
-  
   // 从 Hook 获取逻辑与状态
   const { form, handleOk, upload, schema } = useAdModal(open, initialValues, onSubmit);
 
-  // 2. 动态组件渲染器
+  // 动态组件渲染器
   const renderFormItem = (field: FormFieldConfig) => {
     const commonProps = { ...field.props };
 
     switch (field.component) {
       case 'Input':
         return <Input {...commonProps} />;
-      
       case 'TextArea':
         return <Input.TextArea {...commonProps} />;
-      
       case 'InputNumber':
         return <InputNumber {...commonProps} />;
-      
       case 'VideoUpload':
         // 视频上传比较特殊，逻辑较重，这里保留之前的 JSX 结构，但由配置触发
         return (
@@ -42,14 +38,27 @@ const AdModal = (props: AdModalProps) => {
               name="video_file"
               valuePropName="fileList"
               getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-              noStyle
+              rules={field.rules}
             >
               <Upload
-                multiple={true}
-                maxCount={1}
+                listType='picture'
+                multiple={commonProps.multiple}
+                maxCount={commonProps.maxCount}
                 accept="video/*"
-                showUploadList={false}
                 customRequest={upload.handleUpload}
+                onRemove={(file) => {
+                  const currentVideos = form.getFieldValue('video') || [];
+                  const urlToRemove = file.url || (file.response as string);
+                  const newVideos = currentVideos.filter((v: string) => v !== urlToRemove);
+                  form.setFieldValue('video', newVideos);
+               }}
+               // [可选] 如果你想点击列表项时弹窗播放视频
+               onPreview={(file) => {
+                 const url = file.url || (file.response as string);
+                 if (url) {
+                   window.open(url, '_blank');
+                 }
+               }}
               >
                 <Button 
                   icon={upload.loading ? <LoadingOutlined /> : <UploadOutlined />}
@@ -62,28 +71,6 @@ const AdModal = (props: AdModalProps) => {
             {/* 隐藏字段存储 URL */}
             <Form.Item name={field.name} noStyle hidden rules={field.rules}>
               <Input />
-            </Form.Item>
-            
-            {/* 预览区域 */}
-            <Form.Item noStyle shouldUpdate={(prev, curr) => prev[field.name] !== curr[field.name]}>
-              {({ getFieldValue, setFieldValue }) => {
-                const videoUrl = getFieldValue(field.name);
-                return videoUrl ? (
-                  <div className={styles.previewWrapper}>
-                    <video src={videoUrl} controls className={styles.videoPlayer} />
-                    <div className={styles.fileName}>当前视频: {videoUrl.split('/').pop()}</div>
-                    {/* [新增] 删除按钮 */}
-                    <Button 
-                        type="link" 
-                        danger 
-                        icon={<DeleteOutlined />} 
-                        onClick={() => setFieldValue(field.name, null)}
-                      >
-                        移除视频
-                      </Button>
-                  </div>
-                ) : null;
-              }}
             </Form.Item>
           </div>
         );

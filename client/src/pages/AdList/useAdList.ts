@@ -66,7 +66,14 @@ export const useAdList = () => {
 
   const openAddModal = () => {
     setEditingId(null);
-    setInitialValues(null);
+    setInitialValues({
+      title: 'test',
+      publisher: 'test', // 默认发布者
+      content: 'test',
+      url: 'https://example.com',       // 默认 URL 前缀
+      pricing: 1.0,          // 默认出价
+      video: [],             // 默认视频为空
+    });
     setModalTitle('新增广告');
     setIsModalOpen(true);
   };
@@ -101,13 +108,15 @@ export const useAdList = () => {
     clickMutation.mutate(id); // 调用 mutation
     // 找到当前点击的广告对象
     const targetAd = ads.find(a => a.id === id);
+    // [新增调试日志]
+    console.log('👉 点击的广告数据:', targetAd);
+    console.log('👉 video字段类型:', typeof targetAd?.video);
+    console.log('👉 是否为数组:', Array.isArray(targetAd?.video));
     if (!targetAd) return;
 
-    if (targetAd.video) {
-      // 场景 A: 有视频 -> 打开播放弹窗
+    if (targetAd.video && targetAd.video.length > 0) {
       setPlayingAd(targetAd);
     } else {
-      // 场景 B: 没视频 -> 直接跳转
       window.open(targetAd.url, '_blank');
     }
   };

@@ -10,7 +10,7 @@ interface VideoModalProps {
 }
 
 const VideoModal = ({ ad, onClose }: VideoModalProps) => {
-  const { videoRef, showEndCard, handlers } = useVideoModal(ad, onClose);
+  const { videoRef, showEndCard, handlers, currentSrc } = useVideoModal(ad, onClose);
 
   return (
     <Modal
@@ -19,7 +19,7 @@ const VideoModal = ({ ad, onClose }: VideoModalProps) => {
       footer={null} // 不需要默认的底部按钮
       destroyOnHidden // 关闭时销毁 DOM，停止播放
       centered
-      width={800} // 大屏体验
+      width={800} // 大屏
       className={styles.modal} // 自定义样式去黑边
     >
 
@@ -27,7 +27,7 @@ const VideoModal = ({ ad, onClose }: VideoModalProps) => {
         <div className={styles.container}>
           <video
             ref={videoRef}
-            src={ad.video}
+            src={currentSrc}
             controls={!showEndCard} // 显示结算层时隐藏原生控件
             className={styles.video}
             onEnded={handlers.onEnded}

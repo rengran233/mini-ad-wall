@@ -1,8 +1,6 @@
 import { Empty, Spin } from 'antd'; // 引入 Spin 组件
 import MainLayout from '@/layouts/MainLayout';
-import AdCard from '@/components/AdCard';
-import AdModal from '@/components/AdModal';
-import VideoModal from '@/components/VideoModal';
+import { AdCard, AdModal, VideoModal } from '@/components';
 import { useAdList } from './useAdList';
 import styles from './AdList.module.scss';
 
