@@ -1,21 +1,21 @@
 export const AD_FORM_SCHEMA = [
     {
       name: 'title',
-      label: '这些',
+      label: '广告标题',
       component: 'Input',
       props: { placeholder: '例如：极简广告' },
       rules: [{ required: true, message: '请输入广告标题' }]
     },
     {
       name: 'publisher',
-      label: '全都',
+      label: '发布者',
       component: 'Input',
       props: { placeholder: '例如：字节广告君' },
       rules: [{ required: true, message: '请输入发布者名称' }]
     },
     {
       name: 'content',
-      label: '可以改',
+      label: '广告内容',
       component: 'TextArea',
       props: { rows: 4, placeholder: '描述你的广告...' },
       rules: [{ required: true, message: '请输入广告内容' }]
@@ -34,6 +34,10 @@ export const AD_FORM_SCHEMA = [
       name: 'video',
       label: '广告视频',
       component: 'VideoUpload',
+      props: {
+        maxCount: 5,
+        multiple: true,
+      },
       rules: []
     },
     {

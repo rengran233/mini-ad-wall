@@ -4,43 +4,54 @@ import { AD_FORM_SCHEMA } from '../constants/formSchema';
 import fs from 'fs'; 
 import path from 'path';
 import { envConfig } from '../config/env';
-
-// 复用一下简单的排序算法逻辑
-const calculateScore = (pricing: number, clicked: number): number => {
-  return pricing + (pricing * clicked * 0.42);
-};
+import { calculateScore } from '../utils';
 
 // ------ 处理视频文件移动 ------
-const processVideoFile = (videoUrl: string | null | undefined): string | null | undefined => {
-  if (!videoUrl) return videoUrl;
+const processVideoFiles = (videoUrls: string[] | null | undefined): string[] | null | undefined => {
+  if (!videoUrls || !Array.isArray(videoUrls)) return [];
 
-  // 检查 URL 是否指向临时目录
-  if (videoUrl.includes(envConfig.upload.tempUrlPrefix)) {
-    try {
-      // 从 URL 中提取文件名
-      const fileName = path.basename(videoUrl);
-      
-      const tempPath = path.join(envConfig.upload.tempAbsolutePath, fileName);
-      const finalPath = path.join(envConfig.upload.absolutePath, fileName);
-
-      // 如果临时文件存在，移动它
-      if (fs.existsSync(tempPath)) {
-        // 移动文件 (renameSync 在同一分区下是原子操作，相当于 mv)
-        fs.renameSync(tempPath, finalPath);
-        console.log(`Moved file from temp to final: ${fileName}`);
+  return videoUrls.map(videoUrl => {
+    if (!videoUrl) return videoUrl;
+    // 检查 URL 是否指向临时目录
+    if (videoUrl.includes(envConfig.upload.tempUrlPrefix)) {
+      try {
+        // 从 URL 中提取文件名
+        const fileName = path.basename(videoUrl);
         
-        // 返回新的正式 URL
-        return `${envConfig.baseUrl}${envConfig.upload.urlPrefix}/${fileName}`;
-      }
-    } catch (error) {
-      console.error('Error moving video file:', error);
-      // 如果移动失败，为了数据完整性，可能选择抛错或者保留原样
-      // 这里选择保留原样，虽然文件可能还在临时目录，但至少不会崩
-    }
-  }
+        const tempPath = path.join(envConfig.upload.tempAbsolutePath, fileName);
+        const finalPath = path.join(envConfig.upload.absolutePath, fileName);
   
-  // 如果已经是正式目录的 URL，或者不是本站 URL，直接返回
-  return videoUrl;
+        // 如果临时文件存在，移动它
+        if (fs.existsSync(tempPath)) {
+          // 移动文件 (renameSync 在同一分区下是原子操作，相当于 mv)
+          fs.renameSync(tempPath, finalPath);
+          console.log(`Moved file from temp to final: ${fileName}`);
+          
+          // 返回新的正式 URL
+          return `${envConfig.baseUrl}${envConfig.upload.urlPrefix}/${fileName}`;
+        }
+      } catch (error) {
+        console.error('Error moving video file:', error);
+        // 如果移动失败，为了数据完整性，可能选择抛错或者保留原样
+        // 这里选择保留原样，虽然文件可能还在临时目录，但至少不会崩
+      }
+    }
+    // 如果已经是正式目录的 URL，或者不是本站 URL，直接返回
+    return videoUrl;
+  })
+};
+
+// [新增] 辅助函数：解析数据库中的 video 字段
+// 兼容旧数据(纯字符串)和新数据(JSON数组字符串)
+const parseVideoField = (videoField: string | null): string[] => {
+  if (!videoField) return [];
+  try {
+    const parsed = JSON.parse(videoField);
+    return Array.isArray(parsed) ? parsed : [videoField];
+  } catch (e) {
+    // 如果解析失败，说明是旧格式的单 URL 字符串
+    return [videoField];
+  }
 };
 
 export const AdController = {
@@ -66,9 +77,15 @@ export const AdController = {
         return scoreB - scoreA; // 降序
       });
 
+      // [修改] 格式化返回数据，将 video 字符串转为数组
+      const formattedAds = sortedAds.map(ad => ({
+        ...ad,
+        video: parseVideoField(ad.video)
+      }));
+
       ctx.body = {
         code: 0,
-        data: sortedAds,
+        data: formattedAds,
         message: 'Success'
       };
     } catch (error) {
@@ -92,7 +109,10 @@ export const AdController = {
       }
 
       // 处理视频文件移动
-      const finalVideoUrl = processVideoFile(body.video);
+      // [修改] 接收数组，处理文件，存为 JSON 字符串
+      // 前端传来的 body.video 应该是一个 URL 数组
+      const videoList = Array.isArray(body.video) ? body.video : (body.video ? [body.video] : []);
+      const finalVideoUrls = processVideoFiles(videoList);
 
       const newAd = await prisma.ad.create({
         data: {
@@ -101,14 +121,17 @@ export const AdController = {
           content: body.content,
           url: body.url,
           pricing: parseFloat(body.pricing), // 确保是数字
-          video: finalVideoUrl,
+          video: JSON.stringify(finalVideoUrls),
           clicked: 0,
         }
       });
 
+      // 返回给前端时转回数组
+      const responseData = { ...newAd, video: finalVideoUrls };
+
       ctx.body = {
         code: 0,
-        data: newAd,
+        data: responseData,
         message: 'Ad created successfully'
       };
     } catch (error) {
@@ -124,8 +147,13 @@ export const AdController = {
       const { id } = ctx.params;
       const body = ctx.request.body;
 
-      // 处理视频文件移动 (如果用户上传了新视频)
-      const finalVideoUrl = processVideoFile(body.video);
+      // [修改] 处理视频列表
+      let finalVideoJson = undefined;
+      if (body.video !== undefined) {
+        const videoList = Array.isArray(body.video) ? body.video : (body.video ? [body.video] : []);
+        const finalVideoUrls = processVideoFiles(videoList);
+        finalVideoJson = JSON.stringify(finalVideoUrls);
+      }
 
       const updatedAd = await prisma.ad.update({
         where: { id },
@@ -135,13 +163,19 @@ export const AdController = {
           content: body.content,
           url: body.url,
           pricing: body.pricing ? parseFloat(body.pricing) : undefined,
-          video: finalVideoUrl,
+          video: finalVideoJson,
         }
       });
 
+      // 增加解析逻辑
+      const responseData = {
+        ...updatedAd,
+        video: parseVideoField(updatedAd.video)
+      };
+
       ctx.body = {
         code: 0,
-        data: updatedAd,
+        data: responseData,
         message: 'Ad updated successfully'
       };
     } catch (error) {
@@ -168,49 +202,44 @@ export const AdController = {
         return;
       }
 
-      if (ad.video) {
-        try {
-          // 关键步骤：查询数据库中是否还有其他广告使用了同一个视频 URL
+      // 智能删除逻辑：支持多视频引用计数
+      const videosToDelete = parseVideoField(ad.video);
+
+      if (videosToDelete.length > 0) {
+        // 遍历当前广告的每个视频
+        for (const videoUrl of videosToDelete) {
+          // 查询数据库中，除了当前广告(id: { not: id })之外，
+          // 是否还有其他广告的 video 字段包含这个 URL 字符串
           const usageCount = await prisma.ad.count({
             where: {
-              video: ad.video,
-              // 排除当前正在删除的这条广告 ID (虽然逻辑上 count 包含它就是 >=1，不包含就是 >=0，这里直接查总数更直观)
+              id: { not: id }, // 排除自己
+              video: { contains: videoUrl } // 模糊匹配 URL
             }
           });
 
-          // 只有当数据库中只有 1 条记录（也就是当前这条）使用该视频时，才物理删除文件
-          // 如果 usageCount > 1，说明是副本，只删数据库记录，保留文件
-          if (usageCount <= 1) {
-            const fileName = ad.video.split('/').pop();
-            if (fileName) {
-              const filePath = path.join(process.cwd(), 'uploads', fileName);
+          // 如果计数为 0，说明没有其他广告在使用这个视频，可以安全删除
+          if (usageCount === 0) {
+            try {
+              const fileName = path.basename(videoUrl);
+              const filePath = path.join(envConfig.upload.absolutePath, fileName);
               if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
                 console.log(`Deleted video file: ${filePath}`);
               }
+            } catch (err) {
+              console.error('Failed to delete video file:', err);
             }
-          } else {
-            console.log(`Skipped file deletion. Video is used by ${usageCount} ads.`);
           }
-        } catch(err) {
-          // 文件删除失败也不应该阻止数据库记录删除
-          console.error('Failed to delete video file:', err);
         }
       }
 
-      // ------ 删除数据库记录 ------
-      await prisma.ad.delete({
-        where: { id }
-      });
-      
-      ctx.body = {
-        code: 0,
-        message: 'Ad deleted successfully'
-      };
+      // 执行删除广告记录
+      await prisma.ad.delete({ where: { id } });
+      ctx.body = { code: 0, message: 'Ad deleted successfully' };
     } catch (error) {
       console.error(error);
       ctx.status = 500;
-      ctx.body = { code: 500, message: 'Failed to delete ad' };
+      ctx.body = {code: 500, message: 'Failed to delete ad' };
     }
   },
 
@@ -227,9 +256,15 @@ export const AdController = {
         }
       });
 
+      // 必须像 getAds 一样解析 video 字段，否则前端接收到的是 JSON 字符串
+      const responseData = {
+        ...updatedAd,
+        video: parseVideoField(updatedAd.video)
+      };
+
       ctx.body = {
         code: 0,
-        data: updatedAd,
+        data: responseData,
         message: 'Click count incremented'
       };
     } catch (error) {
