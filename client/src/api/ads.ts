@@ -4,7 +4,7 @@ import type { FormFieldConfig } from '@/types';
 
 // 配置基础实例
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000', // 后端地址
+  baseURL: '', // 后端地址
   headers: {
     'Content-Type': 'application/json',
   },

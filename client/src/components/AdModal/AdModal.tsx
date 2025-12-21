@@ -1,5 +1,5 @@
 import { Upload, Button, Modal, Form, Input, InputNumber, Spin } from 'antd';
-import { LoadingOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import type { AdFormData, FormFieldConfig } from '@/types';
 import { useAdModal } from './useAdModal';
 import styles from './AdModal.module.scss';

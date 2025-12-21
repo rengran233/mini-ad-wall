@@ -16,7 +16,7 @@ if (!fs.existsSync(envConfig.upload.tempAbsolutePath)) {
 }
 
 // ------ 启动服务 ------
-app.listen(envConfig.port, () => {
+app.listen(process.env.PORT || envConfig.port, () => {
     console.log(`🚀 Server running at ${envConfig.baseUrl}`);
     console.log(`- Uploads: ${envConfig.baseUrl}${envConfig.upload.urlPrefix}/`);
     console.log(`- API:     ${envConfig.baseUrl}/ads`);

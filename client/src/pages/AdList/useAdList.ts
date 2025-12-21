@@ -104,7 +104,7 @@ export const useAdList = () => {
     });
   };
 
-  const handleAdClick = (id: string, url: string) => {
+  const handleAdClick = (id: string) => {
     clickMutation.mutate(id); // 调用 mutation
     // 找到当前点击的广告对象
     const targetAd = ads.find(a => a.id === id);
