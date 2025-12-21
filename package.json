@@ -11,7 +11,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently --handle-input -n \"前端,后端\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev -w client\" \"npm run dev -w server\"",
-    "setup": "npm install && npm run db:init --prefix server"
+    "setup": "npm install && npm run db:init --prefix server",
+    
+    "build": "echo '开始构建...' && npm run build-client && npm run move-dist && npm run build-server",
+    "build-client": "cd client && npm install && npm run build",
+    "move-dist": "cd server && mkdir -p public && cp -r ../client/dist/* ./public/",
+    "build-server": "cd server && npm install && npm run build",
+    "start": "cd server && npm start"
   },
   "repository": {
     "type": "git",
